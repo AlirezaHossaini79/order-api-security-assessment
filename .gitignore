@@ -1,0 +1,8 @@
+lab/secrets/
+lab/.env
+__pycache__/
+*.pyc
+*.zip
+*.before-public-port
+.DS_Store
+Thumbs.db

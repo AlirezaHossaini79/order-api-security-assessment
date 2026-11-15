@@ -1,87 +1,183 @@
-import os, json, time, threading
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+import json
+import os
+import re
+import threading
+import time
 from collections import defaultdict
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from urllib.parse import urlsplit
+
 import psycopg
 
-DSN=os.environ['DATABASE_URL']
-state={'delay_ms':0, 'business_fail':False, 'release':'v1'}
-counts=defaultdict(int)
-durations=[]
-lock=threading.Lock()
-def db(): return psycopg.connect(DSN, connect_timeout=3)
+
+TOKENS = {'lab-alice': 'alice', 'lab-bob': 'bob', 'lab-ops': 'ops'}
+DB_PASSWORD = Path(os.environ.get('DB_PASSWORD_FILE', '/run/secrets/db_app_password')).read_text().strip()
+state = {'delay_ms': 0, 'business_fail': False, 'release': 'v1'}
+counts = defaultdict(int)
+duration_sum = 0.0
+duration_count = 0
+lock = threading.Lock()
+
+
+def db():
+    return psycopg.connect(host=os.environ.get('DB_HOST', 'db'),
+                           dbname=os.environ.get('DB_NAME', 'lab'),
+                           user=os.environ.get('DB_USER', 'lab_app'),
+                           password=DB_PASSWORD, connect_timeout=3)
+
+
 def init():
     for _ in range(40):
         try:
-            with db() as c:
-                c.execute('CREATE TABLE IF NOT EXISTS orders(id BIGSERIAL PRIMARY KEY, owner TEXT NOT NULL, item TEXT NOT NULL, request_key TEXT NOT NULL)')
-                if c.execute('SELECT count(*) FROM orders').fetchone()[0]==0:
-                    c.execute("INSERT INTO orders(owner,item,request_key) VALUES ('alice','seed-a','seed-a'),('bob','seed-b','seed-b')")
+            with db() as connection:
+                connection.execute('SELECT id, owner, item, request_key FROM orders LIMIT 0')
             return
-        except psycopg.Error: time.sleep(1)
+        except psycopg.Error:
+            time.sleep(1)
     raise RuntimeError('database unavailable at startup')
 
+
 class Handler(BaseHTTPRequestHandler):
+    def route_label(self):
+        path = urlsplit(self.path).path
+        if re.fullmatch(r'/orders/[0-9]+', path):
+            return '/orders/:id'
+        return path if path in {'/orders', '/live', '/ready', '/metrics', '/debug/config', '/lab/control'} else '/unknown'
+
     def log_message(self, fmt, *args):
-        print(json.dumps({'event':'http','path':self.path,'detail':fmt%args}),flush=True)
+        # Never log user-controlled URLs, authorization headers or database errors.
+        print(json.dumps({'event': 'http', 'route': self.route_label(), 'method': self.command}), flush=True)
+
     def send(self, status, value, typ='application/json'):
-        data=(json.dumps(value) if typ=='application/json' else value).encode()
-        self.send_response(status);self.send_header('Content-Type',typ);self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data)
-    def body(self): return json.loads(self.rfile.read(int(self.headers.get('Content-Length','0'))) or b'{}')
-    def do_GET(self): self.run_request()
-    def do_POST(self): self.run_request()
+        data = (json.dumps(value) if typ == 'application/json' else value).encode()
+        self.send_response(status)
+        self.send_header('Content-Type', typ)
+        self.send_header('Content-Length', str(len(data)))
+        self.send_header('Cache-Control', 'no-store')
+        self.send_header('X-Content-Type-Options', 'nosniff')
+        if status == 401:
+            self.send_header('WWW-Authenticate', 'Bearer')
+        self.end_headers()
+        self.wfile.write(data)
+        return status
+
+    def body(self):
+        length = int(self.headers.get('Content-Length', '0'))
+        if length < 0 or length > 16384 or self.headers.get('Transfer-Encoding'):
+            raise ValueError('invalid body size')
+        value = json.loads(self.rfile.read(length) or b'{}')
+        if not isinstance(value, dict):
+            raise ValueError('JSON object required')
+        return value
+
+    def do_GET(self):
+        self.run_request()
+
+    def do_POST(self):
+        self.run_request()
+
     def run_request(self):
-        start=time.monotonic(); status=500
-        try: status=self.route()
-        except (psycopg.Error, OSError) as e:
-            self.send(503,{'error':'dependency unavailable'});status=503
-        except Exception as e:
-            self.send(400,{'error':type(e).__name__});status=400
+        global duration_sum, duration_count
+        start = time.monotonic()
+        status = 500
+        try:
+            status = self.route()
+        except (psycopg.Error, OSError):
+            status = self.send(503, {'error': 'dependency unavailable'})
+        except (ValueError, TypeError, OverflowError):
+            status = self.send(400, {'error': 'invalid request'})
+        except Exception:
+            status = self.send(500, {'error': 'internal error'})
         finally:
             with lock:
-                # Raw paths are intentionally retained in this starter implementation.
-                counts[(self.path,str(status))]+=1
-                durations.append(time.monotonic()-start)
-    def route(self):
-        path=self.path.split('?')[0]
-        if path=='/live': self.send(200,{'alive':True,'release':state['release']});return 200
-        if path=='/ready':
-            with db() as c: c.execute('SELECT 1')
-            self.send(200,{'ready':True});return 200
-        if path=='/lab/control' and self.command=='POST':
-            body=self.body()
-            with lock:
-                for k in state:
-                    if k in body: state[k]=body[k]
-            self.send(200,state);return 200
-        if path=='/debug/config':
-            self.send(200,{'database_url':DSN,'mode':'synthetic-lab'});return 200
-        if path=='/metrics':
-            with lock:
-                lines=['# TYPE lab_http_requests_total counter']
-                for (p,s),n in counts.items():
-                    lines.append('lab_http_requests_total{path='+json.dumps(p)+',status="'+s+'"} '+str(n))
-                lines+=['# TYPE lab_http_request_duration_seconds summary',
-                    'lab_http_request_duration_seconds_sum '+str(sum(durations)),
-                    'lab_http_request_duration_seconds_count '+str(len(durations))]
-            self.send(200,'\n'.join(lines)+'\n','text/plain');return 200
-        actor={'lab-alice':'alice','lab-bob':'bob','lab-ops':'ops'}.get(self.headers.get('Authorization','').removeprefix('Bearer '))
-        if not actor: self.send(401,{'error':'authentication required'});return 401
-        if path=='/orders' and self.command=='POST':
-            body=self.body()
-            time.sleep(max(0,min(int(state['delay_ms']),10000))/1000)
-            if state['business_fail']:
-                self.send(200,{'ok':False,'error':'order rejected'});return 200
-            with db() as c:
-                row=c.execute('INSERT INTO orders(owner,item,request_key) VALUES (%s,%s,%s) RETURNING id',
-                    (actor,body.get('item','demo'),self.headers.get('Idempotency-Key',''))).fetchone()
-            self.send(201,{'ok':True,'id':row[0]});return 201
-        if path.startswith('/orders/'):
-            oid=int(path.rsplit('/',1)[1])
-            with db() as c: row=c.execute('SELECT id,owner,item,request_key FROM orders WHERE id=%s',(oid,)).fetchone()
-            if not row: self.send(404,{'error':'missing'});return 404
-            self.send(200,dict(zip(['id','owner','item','request_key'],row)));return 200
-        self.send(404,{'error':'missing'});return 404
+                counts[(self.route_label(), str(status))] += 1
+                duration_sum += time.monotonic() - start
+                duration_count += 1
 
-if __name__=='__main__':
+    def route(self):
+        path = urlsplit(self.path).path
+        if path in {'/live', '/ready'}:
+            if self.command != 'GET':
+                return self.send(405, {'error': 'method not allowed'})
+            if path == '/live':
+                with lock:
+                    release = state['release']
+                return self.send(200, {'alive': True, 'release': release})
+            with db() as connection:
+                connection.execute('SELECT 1')
+            return self.send(200, {'ready': True})
+
+        authorization = self.headers.get('Authorization', '')
+        actor = TOKENS.get(authorization[7:]) if authorization.startswith('Bearer ') else None
+        if not actor:
+            return self.send(401, {'error': 'authentication required'})
+
+        if path in {'/lab/control', '/debug/config', '/metrics'}:
+            if actor != 'ops':
+                return self.send(403, {'error': 'forbidden'})
+            if path == '/lab/control':
+                if self.command != 'POST':
+                    return self.send(405, {'error': 'method not allowed'})
+                body = self.body()
+                if set(body) - set(state):
+                    raise ValueError('unknown control')
+                if 'delay_ms' in body and (type(body['delay_ms']) is not int or not 0 <= body['delay_ms'] <= 10000):
+                    raise ValueError('invalid delay')
+                if 'business_fail' in body and type(body['business_fail']) is not bool:
+                    raise ValueError('invalid failure flag')
+                if 'release' in body and (not isinstance(body['release'], str) or not re.fullmatch(r'[A-Za-z0-9._-]{1,64}', body['release'])):
+                    raise ValueError('invalid release label')
+                with lock:
+                    state.update(body)
+                    result = dict(state)
+                return self.send(200, result)
+            if self.command != 'GET':
+                return self.send(405, {'error': 'method not allowed'})
+            if path == '/debug/config':
+                return self.send(200, {'mode': 'synthetic-lab'})
+            with lock:
+                lines = ['# TYPE lab_http_requests_total counter']
+                for (route, status), count in counts.items():
+                    lines.append('lab_http_requests_total{path=' + json.dumps(route) + ',status="' + status + '"} ' + str(count))
+                lines += ['# TYPE lab_http_request_duration_seconds summary',
+                          'lab_http_request_duration_seconds_sum ' + str(duration_sum),
+                          'lab_http_request_duration_seconds_count ' + str(duration_count)]
+            return self.send(200, '\n'.join(lines) + '\n', 'text/plain')
+
+        if path == '/orders':
+            if self.command != 'POST':
+                return self.send(405, {'error': 'method not allowed'})
+            body = self.body()
+            item = body.get('item')
+            request_key = self.headers.get('Idempotency-Key', '')
+            if not isinstance(item, str) or not item.strip() or len(item) > 1000 or len(request_key) > 128:
+                raise ValueError('invalid order')
+            with lock:
+                delay_ms, business_fail = state['delay_ms'], state['business_fail']
+            time.sleep(delay_ms / 1000)
+            if business_fail:
+                return self.send(200, {'ok': False, 'error': 'order rejected'})
+            with db() as connection:
+                row = connection.execute('INSERT INTO orders(owner,item,request_key) VALUES (%s,%s,%s) RETURNING id',
+                                         (actor, item, request_key)).fetchone()
+            return self.send(201, {'ok': True, 'id': row[0]})
+
+        if re.fullmatch(r'/orders/[0-9]+', path):
+            if self.command != 'GET':
+                return self.send(405, {'error': 'method not allowed'})
+            order_id = int(path.rsplit('/', 1)[1])
+            if order_id > 9223372036854775807:
+                return self.send(404, {'error': 'missing'})
+            with db() as connection:
+                row = connection.execute('SELECT id,owner,item,request_key FROM orders WHERE id=%s AND (owner=%s OR %s)',
+                                         (order_id, actor, actor == 'ops')).fetchone()
+            if not row:
+                return self.send(404, {'error': 'missing'})
+            return self.send(200, dict(zip(['id', 'owner', 'item', 'request_key'], row)))
+        return self.send(404, {'error': 'missing'})
+
+
+if __name__ == '__main__':
     init()
-    ThreadingHTTPServer(('0.0.0.0',8080),Handler).serve_forever()
+    ThreadingHTTPServer(('0.0.0.0', 8080), Handler).serve_forever()

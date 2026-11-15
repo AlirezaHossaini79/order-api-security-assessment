@@ -1,5 +1,7 @@
-import json, time, urllib.request
-base='http://127.0.0.1:18080'
+import argparse, json, time, urllib.request
+parser=argparse.ArgumentParser()
+parser.add_argument('--url',default='http://127.0.0.1:18080')
+base=parser.parse_args().url.rstrip('/')
 for attempt in range(60):
     try:
         with urllib.request.urlopen(base+'/ready',timeout=2) as r:
