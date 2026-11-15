@@ -1,0 +1,769 @@
+
+UTC: 2026-11-15T14:46:13.099682+00:00
+COMMAND: ["/usr/bin/python3", "tools/setup_secrets.py"]
+db_admin_password: generated (value not displayed)
+db_app_password: generated (value not displayed)
+
+UTC: 2026-11-15T14:46:13.136336+00:00
+COMMAND: ["docker", "compose", "-p", "hr-hosseini-check-b1a071c2b5", "-f", "/tmp/hosseini-clean-6eedwlhl/lab/compose.yaml", "up", "-d", "--build"]
+ Image hr-hosseini-check-b1a071c2b5-api Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 554B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 268B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/python:3.12-slim
+#3 DONE 0.2s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 58B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 63B done
+#5 DONE 0.0s
+
+#6 [1/5] FROM docker.io/library/python:3.12-slim@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b
+#6 resolve docker.io/library/python:3.12-slim@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b 0.0s done
+#6 DONE 0.0s
+
+#7 [2/5] WORKDIR /app
+#7 CACHED
+
+#8 [3/5] COPY requirements.txt .
+#8 CACHED
+
+#9 [4/5] RUN pip install --no-cache-dir -r requirements.txt
+#9 CACHED
+
+#10 [5/5] COPY app.py .
+#10 CACHED
+
+#11 exporting to image
+#11 exporting layers done
+#11 exporting manifest sha256:8c2f4320b5a978328a6d99c2ff53d5f7ea852907423522edc4cfdefd228bcbd8 0.0s done
+#11 exporting config sha256:039a52d9b25c67378bd5eca5488878f70b620f0e8310a8bb5684535acd155f04 0.0s done
+#11 exporting attestation manifest sha256:6820b8be85b1f584d53f0db8a1860666c08ce5682f58f46a16bd8f206caeb5a1
+#11 exporting attestation manifest sha256:6820b8be85b1f584d53f0db8a1860666c08ce5682f58f46a16bd8f206caeb5a1 0.0s done
+#11 exporting manifest list sha256:0a19653363da43737e4f443f40493135d651c0cb6a8ffd9db1db7d1c2c0b328e 0.0s done
+#11 naming to docker.io/library/hr-hosseini-check-b1a071c2b5-api:latest done
+#11 unpacking to docker.io/library/hr-hosseini-check-b1a071c2b5-api:latest done
+#11 DONE 0.1s
+
+#12 resolving provenance for metadata file
+#12 DONE 0.0s
+ Image hr-hosseini-check-b1a071c2b5-api Built 
+ Network hr-hosseini-check-b1a071c2b5_backend Creating 
+ Network hr-hosseini-check-b1a071c2b5_backend Creating 
+ Network hr-hosseini-check-b1a071c2b5_frontend Creating 
+ Network hr-hosseini-check-b1a071c2b5_frontend Creating 
+ Volume hr-hosseini-check-b1a071c2b5_pgdata Creating 
+ Volume hr-hosseini-check-b1a071c2b5_pgdata Creating 
+ Volume hr-hosseini-check-b1a071c2b5_pgdata Created 
+ Volume hr-hosseini-check-b1a071c2b5_pgdata Created 
+ Network hr-hosseini-check-b1a071c2b5_backend Created 
+ Network hr-hosseini-check-b1a071c2b5_backend Created 
+ Container hr-hosseini-check-b1a071c2b5-db-1 Creating 
+ Network hr-hosseini-check-b1a071c2b5_frontend Created 
+ Network hr-hosseini-check-b1a071c2b5_frontend Created 
+ Container hr-hosseini-check-b1a071c2b5-db-1 Created 
+ Container hr-hosseini-check-b1a071c2b5-api-1 Creating 
+ Container hr-hosseini-check-b1a071c2b5-api-1 Created 
+ Container hr-hosseini-check-b1a071c2b5-db-1 Starting 
+ Container hr-hosseini-check-b1a071c2b5-db-1 Started 
+ Container hr-hosseini-check-b1a071c2b5-db-1 Waiting 
+ Container hr-hosseini-check-b1a071c2b5-db-1 Healthy 
+ Container hr-hosseini-check-b1a071c2b5-api-1 Starting 
+ Container hr-hosseini-check-b1a071c2b5-api-1 Started 
+
+UTC: 2026-11-15T14:46:18.098644+00:00
+COMMAND: ["/usr/bin/python3", "tools/smoke.py", "--url", "http://127.0.0.1:40939"]
+PASS: live, ready, create, read
+
+UTC: 2026-11-15T14:46:19.265474+00:00
+COMMAND: ["/usr/bin/python3", "tests/security_checks.py", "--url", "http://127.0.0.1:40939", "--expect", "fixed", "--evidence", "/root/direct/evidence/clean-security.json"]
+PASS alice creates order
+PASS bob creates order
+PASS alice cannot read bob
+PASS anonymous config denied
+PASS anonymous control denied
+PASS metrics query data absent
+PASS alice reads own order
+PASS alice cannot read other owner
+PASS ops reads alice order
+PASS alice denied /lab/control
+PASS alice denied /debug/config
+PASS alice denied /metrics
+PASS bob reads own order
+PASS bob cannot read other owner
+PASS ops reads bob order
+PASS bob denied /lab/control
+PASS bob denied /debug/config
+PASS bob denied /metrics
+PASS missing token denied /orders
+PASS invalid token denied /orders
+PASS missing token denied /orders/4
+PASS invalid token denied /orders/4
+PASS missing token denied /lab/control
+PASS invalid token denied /lab/control
+PASS missing token denied /debug/config
+PASS invalid token denied /debug/config
+PASS missing token denied /metrics
+PASS invalid token denied /metrics
+PASS ops control works
+PASS control rejects invalid values
+PASS ops config contains no DSN or password
+PASS invalid item rejected
+PASS order read rejects POST
+PASS /live remains available
+PASS /ready remains available
+35/35 checks passed; evidence: /root/direct/evidence/clean-security.json
+
+UTC: 2026-11-15T14:46:19.532579+00:00
+COMMAND: ["/usr/bin/python3", "tools/runtime_checks.py", "--project", "hr-hosseini-check-b1a071c2b5", "--evidence", "/root/direct/evidence/clean-runtime.json"]
+PASS API uses non-root UID
+PASS API root filesystem is read-only
+PASS API drops all capabilities
+PASS API cannot gain privileges
+PASS DB has no published port
+PASS API environment contains no DSN/password value
+PASS API mounts only application credential
+PASS DB is on internal networks only
+PASS DB app role has no admin attributes
+PASS DB allows SELECT/INSERT only, no schema creation
+
+UTC: 2026-11-15T14:46:20.724138+00:00
+COMMAND: ["/usr/bin/python3", "tools/control.py", "--url", "http://127.0.0.1:40939"]
+{"delay_ms": 0, "business_fail": false, "release": "v1"}
+
+UTC: 2026-11-15T14:46:20.841573+00:00
+COMMAND: ["/usr/bin/python3", "tools/traffic.py", "--url", "http://127.0.0.1:40939", "--requests", "100", "--workers", "5"]
+{
+  "requests": 100,
+  "success": 100,
+  "p95_seconds": 0.0661,
+  "results": [
+    {
+      "index": 0,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.1869
+    },
+    {
+      "index": 1,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.1424
+    },
+    {
+      "index": 2,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.1807
+    },
+    {
+      "index": 3,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.169
+    },
+    {
+      "index": 4,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.1765
+    },
+    {
+      "index": 5,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0214
+    },
+    {
+      "index": 6,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0567
+    },
+    {
+      "index": 7,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0448
+    },
+    {
+      "index": 8,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0195
+    },
+    {
+      "index": 9,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0484
+    },
+    {
+      "index": 10,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0661
+    },
+    {
+      "index": 11,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0356
+    },
+    {
+      "index": 12,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0576
+    },
+    {
+      "index": 13,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0649
+    },
+    {
+      "index": 14,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.029
+    },
+    {
+      "index": 15,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0287
+    },
+    {
+      "index": 16,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0643
+    },
+    {
+      "index": 17,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0428
+    },
+    {
+      "index": 18,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0291
+    },
+    {
+      "index": 19,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0315
+    },
+    {
+      "index": 20,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0477
+    },
+    {
+      "index": 21,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0562
+    },
+    {
+      "index": 22,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0317
+    },
+    {
+      "index": 23,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0425
+    },
+    {
+      "index": 24,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.043
+    },
+    {
+      "index": 25,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0332
+    },
+    {
+      "index": 26,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0423
+    },
+    {
+      "index": 27,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0507
+    },
+    {
+      "index": 28,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0388
+    },
+    {
+      "index": 29,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0392
+    },
+    {
+      "index": 30,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0434
+    },
+    {
+      "index": 31,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0398
+    },
+    {
+      "index": 32,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0498
+    },
+    {
+      "index": 33,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0345
+    },
+    {
+      "index": 34,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0387
+    },
+    {
+      "index": 35,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0397
+    },
+    {
+      "index": 36,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0309
+    },
+    {
+      "index": 37,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0379
+    },
+    {
+      "index": 38,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0397
+    },
+    {
+      "index": 39,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0544
+    },
+    {
+      "index": 40,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0476
+    },
+    {
+      "index": 41,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0344
+    },
+    {
+      "index": 42,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0397
+    },
+    {
+      "index": 43,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0357
+    },
+    {
+      "index": 44,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0435
+    },
+    {
+      "index": 45,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0567
+    },
+    {
+      "index": 46,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.038
+    },
+    {
+      "index": 47,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0313
+    },
+    {
+      "index": 48,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0593
+    },
+    {
+      "index": 49,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0353
+    },
+    {
+      "index": 50,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0582
+    },
+    {
+      "index": 51,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.036
+    },
+    {
+      "index": 52,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0448
+    },
+    {
+      "index": 53,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0246
+    },
+    {
+      "index": 54,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0502
+    },
+    {
+      "index": 55,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0515
+    },
+    {
+      "index": 56,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0489
+    },
+    {
+      "index": 57,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0446
+    },
+    {
+      "index": 58,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0424
+    },
+    {
+      "index": 59,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0409
+    },
+    {
+      "index": 60,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0263
+    },
+    {
+      "index": 61,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0495
+    },
+    {
+      "index": 62,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0324
+    },
+    {
+      "index": 63,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0485
+    },
+    {
+      "index": 64,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0554
+    },
+    {
+      "index": 65,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0413
+    },
+    {
+      "index": 66,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0337
+    },
+    {
+      "index": 67,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0453
+    },
+    {
+      "index": 68,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0411
+    },
+    {
+      "index": 69,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0454
+    },
+    {
+      "index": 70,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0422
+    },
+    {
+      "index": 71,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0372
+    },
+    {
+      "index": 72,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0371
+    },
+    {
+      "index": 73,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0332
+    },
+    {
+      "index": 74,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0326
+    },
+    {
+      "index": 75,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.044
+    },
+    {
+      "index": 76,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0359
+    },
+    {
+      "index": 77,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0342
+    },
+    {
+      "index": 78,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0462
+    },
+    {
+      "index": 79,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0471
+    },
+    {
+      "index": 80,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0496
+    },
+    {
+      "index": 81,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0442
+    },
+    {
+      "index": 82,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0463
+    },
+    {
+      "index": 83,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0383
+    },
+    {
+      "index": 84,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0371
+    },
+    {
+      "index": 85,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0492
+    },
+    {
+      "index": 86,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0362
+    },
+    {
+      "index": 87,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0444
+    },
+    {
+      "index": 88,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0508
+    },
+    {
+      "index": 89,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0451
+    },
+    {
+      "index": 90,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0402
+    },
+    {
+      "index": 91,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0469
+    },
+    {
+      "index": 92,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0345
+    },
+    {
+      "index": 93,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0518
+    },
+    {
+      "index": 94,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0471
+    },
+    {
+      "index": 95,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0282
+    },
+    {
+      "index": 96,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0358
+    },
+    {
+      "index": 97,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0396
+    },
+    {
+      "index": 98,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0342
+    },
+    {
+      "index": 99,
+      "status": 201,
+      "business_ok": true,
+      "seconds": 0.0213
+    }
+  ]
+}
+
+PASS: clean startup, security, runtime privileges, ops helper, sample traffic
+
+UTC: 2026-11-15T14:46:21.901457+00:00
+COMMAND: ["docker", "compose", "-p", "hr-hosseini-check-b1a071c2b5", "-f", "/tmp/hosseini-clean-6eedwlhl/lab/compose.yaml", "down", "-v"]
+ Container hr-hosseini-check-b1a071c2b5-api-1 Stopping 
+ Container hr-hosseini-check-b1a071c2b5-api-1 Stopped 
+ Container hr-hosseini-check-b1a071c2b5-api-1 Removing 
+ Container hr-hosseini-check-b1a071c2b5-api-1 Removed 
+ Container hr-hosseini-check-b1a071c2b5-db-1 Stopping 
+ Container hr-hosseini-check-b1a071c2b5-db-1 Stopped 
+ Container hr-hosseini-check-b1a071c2b5-db-1 Removing 
+ Container hr-hosseini-check-b1a071c2b5-db-1 Removed 
+ Volume hr-hosseini-check-b1a071c2b5_pgdata Removing 
+ Network hr-hosseini-check-b1a071c2b5_backend Removing 
+ Network hr-hosseini-check-b1a071c2b5_frontend Removing 
+ Volume hr-hosseini-check-b1a071c2b5_pgdata Removed 
+ Network hr-hosseini-check-b1a071c2b5_frontend Removed 
+ Network hr-hosseini-check-b1a071c2b5_backend Removed 

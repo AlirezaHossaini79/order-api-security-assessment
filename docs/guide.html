@@ -1,0 +1,169 @@
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>راهنمای بررسی امنیت API سفارش‌ها</title><style>*{box-sizing:border-box}html{scroll-behavior:auto}body{margin:0;background:#f4f7f8;color:#142b35;font-family:Tahoma,Arial,sans-serif;line-height:2.05;font-size:16px}header{background:#142b35;color:white;padding:20px max(28px,calc((100vw - 1040px)/2))}header p{margin:0;font-size:14px;color:#c7dcdf}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px}.toolbar a{color:#fff}.toolbar button{border:1px solid #abc4c8;background:transparent;color:white;border-radius:7px;padding:8px 15px;font-family:inherit;cursor:pointer}main{max-width:1100px;margin:32px auto;background:white;padding:40px 46px;border:1px solid #dde6e8;border-radius:12px}h1{font-family:Arial,sans-serif;direction:ltr;text-align:right;font-size:32px;line-height:1.35;margin:0 0 26px;color:#142b35}h2{font-size:23px;margin:48px 0 18px;padding-top:12px;scroll-margin-top:20px;color:#086d65}h3{font-size:18px;margin:30px 0 12px}p{margin:14px 0}a{color:#08756e;text-decoration-thickness:1px;text-underline-offset:4px}strong{font-weight:700}figure{margin:28px 0}figure img{display:block;width:100%;height:auto;border-radius:10px}figcaption{font-size:12px;color:#526771;text-align:center;margin-top:6px}.code-block{margin:18px 0;border:1px solid #d7e2e5;border-radius:8px;overflow:hidden;direction:ltr}.code-label{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:#eaf1f3;font:12px Arial,sans-serif;color:#526771}.copy{font:12px Tahoma,sans-serif;color:#086d65;background:white;border:1px solid #c1d6d7;border-radius:5px;cursor:pointer;padding:4px 12px}pre{margin:0;padding:18px 20px;overflow:auto;line-height:1.7;text-align:left;background:#f7f9fa;tab-size:4}code{font-family:Consolas,'Courier New',monospace;font-size:14px;direction:ltr;unicode-bidi:isolate}p code,td code{display:inline-block;max-width:100%;overflow-wrap:anywhere;background:#edf3f4;padding:0 5px;border-radius:4px}pre code{white-space:pre;unicode-bidi:plaintext}.table-wrap{overflow:auto;margin:20px 0}table{width:100%;border-collapse:collapse;line-height:1.9;font-size:14px;text-align:right}th,td{border:1px solid #dce5e7;padding:11px 14px;vertical-align:top}th{background:#edf4f4;color:#15544e}tr:nth-child(even) td{background:#fafcfc}details{background:#f2f7f7;border:1px solid #d7e5e3;border-radius:8px;padding:12px 20px;margin:28px 0}summary{cursor:pointer;color:#086d65;font-weight:bold}nav{columns:2;column-gap:30px;font-size:14px;padding-top:10px}nav a{display:block;break-inside:avoid;margin-bottom:6px;text-decoration:none}footer{text-align:center;font-size:12px;color:#526771;padding:0 20px 30px}@media(max-width:720px){body{font-size:15px}main{margin:0;border:0;border-radius:0;padding:26px 18px}h1{font-size:24px;overflow-wrap:anywhere}h2{font-size:20px}h3{font-size:17px}nav{columns:1}header{padding:16px 18px}.toolbar{flex-wrap:wrap}th,td{padding:8px 10px;min-width:110px}figure{margin:20px -5px}pre{padding:14px;font-size:12px}.toolbar p{max-width:80%}}@media print{body{background:white;font-size:11pt}header,.copy,details,footer{display:none}main{border:0;margin:0;padding:0;max-width:none}h2,h3{break-after:avoid}figure,pre,tr{break-inside:avoid}a{color:inherit;text-decoration:none}.code-label{padding:3px 8px}pre{white-space:pre-wrap}pre code{white-space:pre-wrap;overflow-wrap:anywhere}.table-wrap{overflow:visible}h1{font-size:24pt}}</style></head><body><header><div class="toolbar"><p>راهنمای بررسی پروژه و تکرار تست‌ها</p><button type="button" onclick="window.print()">چاپ یا ذخیره PDF</button></div></header><main><h1>Order API Security Assessment</h1><details open><summary>فهرست راهنما</summary><nav><a href="#section-1">۱. برنامه چه کاری انجام می‌دهد؟</a><a href="#section-2">۲. محدودهٔ بررسی چه بوده است؟</a><a href="#section-3">۳. مشکل‌ها و اصلاحات</a><a href="#section-4">۴. اجرای برنامه از صفر</a><a href="#section-5">۵. تنظیم پورت و رمزها</a><a href="#section-6">۶. تست دستی با چشم خودمان</a><a href="#section-7">۷. تست خودکار و خروجی قابل بررسی</a><a href="#section-8">۸. فایل‌ها را از کجا دنبال کنیم؟</a><a href="#section-9">۹. توقف و خطاهای معمول</a><a href="#section-10">۱۰. چه محدودیت‌هایی باقی مانده است؟</a><a href="#section-11">۱۱. استفاده از AI و آماده‌شدن برای دفاع</a></nav></details>
+<p>این پروژه یک تمرین امنیتی برای برنامهٔ ثبت سفارش است. نسخهٔ اولیه چند مشکل عمدی داشت: یک کاربر می‌توانست سفارش کاربر دیگر را بخواند، رمز دیتابیس در پاسخ API دیده می‌شد و بخش کنترل برنامه بدون مجوز در دسترس بود. این مشکلات بررسی، بازتولید و اصلاح شده‌اند. تست‌ها و خروجی واقعی آن‌ها هم در همین مخزن قرار دارند.</p>
+<p><strong>مسیر پیشنهادی مطالعه:</strong> ابتدا شکل زیر و بخش «مشکل‌ها و اصلاحات» را ببینید؛ سپس برنامه را اجرا کنید و تست‌ها را تکرار کنید. برای خواندن همین راهنما در مرورگر، فایل <a href="guide.html">راهنمای تصویری</a> را دانلود و باز کنید؛ در GitHub خود این README نمایش داده می‌شود.</p>
+<figure><img loading="lazy" src="images/results.png" alt="خلاصه نتایج واقعی بررسی و تست پروژه"><figcaption>خلاصه نتایج واقعی بررسی و تست پروژه</figcaption></figure>
+<h2 id="section-1">۱. برنامه چه کاری انجام می‌دهد؟</h2>
+<p>کاربر یک سفارش ثبت می‌کند و بعد آن را می‌خواند. اطلاعات سفارش‌ها در دیتابیس PostgreSQL ذخیره می‌شود. برنامه صفحهٔ گرافیکی ندارد؛ خروجی آن JSON است، یعنی متن ساختاریافته‌ای مثل <code>{&quot;ready&quot;: true}</code>.</p>
+<p>سه هویت آزمایشی داریم:</p>
+<div class="table-wrap"><table><thead><tr><th>کاربر</th><th>توکن آزمایشی</th><th>دسترسی مورد انتظار</th></tr></thead><tbody><tr><td>Alice یا آلیس</td><td><code>lab-alice</code></td><td>ثبت و مشاهدهٔ سفارش خودش</td></tr><tr><td>Bob یا باب</td><td><code>lab-bob</code></td><td>ثبت و مشاهدهٔ سفارش خودش</td></tr><tr><td>Ops یا مسئول عملیات</td><td><code>lab-ops</code></td><td>مشاهدهٔ سفارش‌ها و استفاده از بخش کنترل و پایش</td></tr></tbody></table></div>
+<p><strong>توکن</strong> در این تمرین مثل کارت شناسایی است. برنامه از روی آن می‌فهمد درخواست را چه کسی فرستاده است. اما شناختن کاربر کافی نیست؛ باید اجازهٔ دسترسی او به هر سفارش هم بررسی شود.</p>
+<figure><img loading="lazy" src="images/architecture.png" alt="اجزای برنامه و تفاوت پورت میزبان با پورت کانتینر"><figcaption>اجزای برنامه و تفاوت پورت میزبان با پورت کانتینر</figcaption></figure>
+<p>پورت <code>18080</code> مربوط به دسترسی به برنامه روی میزبان است. پورت <code>8080</code> داخل کانتینر API است؛ این دو یکی نیستند. پس برنامه می‌تواند کنار یک وردپرس که روی پورت <code>8080</code> میزبان است اجرا شود. دیتابیس با پورت <code>5432</code> فقط در شبکهٔ داخلی داکر در دسترس است و روی میزبان منتشر نمی‌شود.</p>
+<h2 id="section-2">۲. محدودهٔ بررسی چه بوده است؟</h2>
+<p>فقط همین آزمایشگاه و داده‌های ساختگی بررسی شده‌اند. اطلاعات مهم این محیط، سفارش‌ها و مالک آن‌ها، رمز دیتابیس و تنظیمات کنترل سرویس هستند. مهاجم احتمالی می‌تواند یک کاربر عادی یا فردی بدون توکن باشد.</p>
+<p>سه مرز مهم داریم: درخواست کاربر به API، اتصال API به دیتابیس و دسترسی کانتینر به میزبان. هر مرز باید به اندازهٔ نیاز دسترسی بدهد. هیچ حمله به سرویس دیگر، دریافت دادهٔ واقعی یا تست مختل‌کننده اجرا نشده است.</p>
+<h2 id="section-3">۳. مشکل‌ها و اصلاحات</h2>
+<h3>مشکل اول ـ مشاهدهٔ سفارش دیگران</h3>
+<p><strong>قبل:</strong> آلیس با توکن خودش و شناسهٔ سفارش باب، اطلاعات سفارش باب را می‌گرفت. برنامه فقط معتبر بودن توکن را بررسی می‌کرد و به مالک سفارش کاری نداشت. این مشکل با نام IDOR هم شناخته می‌شود.</p>
+<p><strong>راهکار:</strong> هنگام خواندن سفارش، علاوه بر شناسه، مالک هم در شرط جست‌وجوی دیتابیس بررسی می‌شود. فقط مالک یا <code>ops</code> مجاز است. درخواست آلیس برای سفارش باب اکنون <code>404</code> می‌گیرد تا حتی وجود آن سفارش برای او تأیید نشود.</p>
+<p><strong>پیاده‌سازی:</strong> در <a href="../lab/app/app.py">app.py</a>، شرط خواندن سفارش از <code>WHERE id=%s</code> به شرط زیر تغییر کرده است. مقادیر از طریق پارامتر SQL ارسال می‌شوند، نه با چسباندن متن ورودی به query.</p>
+<div class="code-block"><div class="code-label"><span>sql</span><button type="button" class="copy">کپی</button></div><pre dir="ltr"><code>WHERE id=%s AND (owner=%s OR %s)</code></pre></div>
+<p>پارامترها به ترتیب شناسهٔ سفارش، نام کاربر و نتیجهٔ بررسی <code>actor == &#x27;ops&#x27;</code> هستند. مالک سفارش جدید هم از توکن گرفته می‌شود؛ کاربر نمی‌تواند با فرستادن یک فیلد در بدنه، خودش را مالک دیگری معرفی کند.</p>
+<figure><img loading="lazy" src="images/ownership.png" alt="مقایسه دسترسی به سفارش قبل و بعد از اصلاح"><figcaption>مقایسه دسترسی به سفارش قبل و بعد از اصلاح</figcaption></figure>
+<h3>مشکل دوم ـ نمایش رمز دیتابیس</h3>
+<p><strong>قبل:</strong> آدرس <code>/debug/config</code> بدون توکن، رشتهٔ اتصال دیتابیس را نشان می‌داد. این رشته یا DSN شامل نام کاربری و رمز بود.</p>
+<p><strong>راهکار:</strong> این مسیر فقط برای <code>ops</code> باز است و پاسخ آن به اطلاعات بی‌خطر محدود شده است. حتی <code>ops</code> هم رمز یا DSN را در پاسخ نمی‌بیند.</p>
+<p><strong>پیاده‌سازی:</strong> در <a href="../lab/app/app.py">app.py</a>، پاسخ تنظیمات فقط <code>{&quot;mode&quot;:&quot;synthetic-lab&quot;}</code> است. اطلاعات اتصال، متغیرهای محیطی و متن خطاهای داخلی به کاربر برگردانده نمی‌شوند.</p>
+<h3>مشکل سوم ـ کنترل برنامه بدون مجوز</h3>
+<p><strong>قبل:</strong> هر فردی می‌توانست به <code>/lab/control</code> درخواست بفرستد؛ این مسیر می‌تواند تأخیر مصنوعی یا خطای تجاری ایجاد کند.</p>
+<p><strong>راهکار:</strong> توکن معتبر و نقش <code>ops</code> هر دو الزامی شدند. مقادیر کنترل هم بررسی می‌شوند؛ مثلاً تأخیر منفی پذیرفته نمی‌شود.</p>
+<p><strong>پیاده‌سازی:</strong> کنترل دسترسی در <a href="../lab/app/app.py">app.py</a> انجام می‌شود. ابزار <a href="../lab/tools/control.py">control.py</a> هم به‌روز شده تا توکن <code>ops</code> را بفرستد و بعد از اصلاح همچنان قابل استفاده باشد.</p>
+<h3>مشکل چهارم ـ دیده‌شدن اطلاعات URL در آمار و لاگ</h3>
+<p><strong>قبل:</strong> مسیر کامل درخواست، همراه پارامترهای بعد از <code>?</code>، ذخیره می‌شد و در <code>/metrics</code> عمومی دیده می‌شد. اگر اطلاعات حساسی در URL باشد، ممکن است از همین مسیر لو برود. ذخیرهٔ مسیرهای نامحدود و فهرست همهٔ زمان‌های پاسخ، حافظه را هم افزایش می‌داد.</p>
+<p><strong>راهکار:</strong> دسترسی آمار به <code>ops</code> محدود شد. در لاگ و آمار فقط نام ثابت مسیر ثبت می‌شود؛ مثلاً <code>/orders/:id</code> به‌جای شناسهٔ واقعی. query ثبت نمی‌شود. برای زمان پاسخ فقط مجموع و تعداد نگه‌داری می‌شود.</p>
+<p><strong>پیاده‌سازی:</strong> تابع <code>route_label</code> و بخش metrics در <a href="../lab/app/app.py">app.py</a>. این مورد با یک marker کاملاً ساختگی در URL، قبل و بعد از اصلاح بررسی شده است.</p>
+<h3>مشکل پنجم ـ رمز ثابت و دسترسی زیاد به دیتابیس</h3>
+<p><strong>قبل:</strong> رمز در فایل Compose نوشته شده بود و API با نقش راه‌انداز دیتابیس کار می‌کرد. در نتیجه هم رمز داخل سورس وجود داشت و هم دسترسی API بیشتر از نیازش بود.</p>
+<p><strong>راهکار:</strong> برای مدیر DB و برنامه دو رمز تصادفی جدا ساخته می‌شود. رمزها از فایل به کانتینر تزریق می‌شوند. API فقط رمز خودش را می‌گیرد و با کاربر <code>lab_app</code> وصل می‌شود؛ این کاربر اجازهٔ خواندن و ثبت سفارش دارد، اما مدیر دیتابیس نیست و نمی‌تواند جدول یا schema بسازد.</p>
+<p><strong>پیاده‌سازی:</strong> <a href="../lab/tools/setup_secrets.py">setup_secrets.py</a>، <a href="../lab/db/init.sh">init.sh</a> و <a href="../lab/compose.yaml">compose.yaml</a>. در ارتقای محیط قبلی، رمز اولیهٔ مدیر هم تغییر می‌کند. فایل‌های رمز در Git قرار نمی‌گیرند.</p>
+<h3>مشکل ششم ـ اجرای API با دسترسی root</h3>
+<p><strong>قبل:</strong> در Dockerfile کاربر مشخص نشده بود؛ برنامه به‌صورت پیش‌فرض با root اجرا می‌شد و فایل‌سیستم کانتینر قابل نوشتن بود. این وضعیت در صورت نفوذ، اثر مشکل را بیشتر می‌کند؛ به‌تنهایی اثبات نفوذ نیست.</p>
+<p><strong>راهکار:</strong> برنامه با کاربر غیر root به شناسهٔ <code>10001</code> اجرا می‌شود. فایل‌سیستم اصلی فقط‌خواندنی است؛ قابلیت‌های اضافی لینوکس حذف و افزایش دسترسی ممنوع شده است. برای فایل موقت، فضای محدود جدا وجود دارد.</p>
+<p><strong>پیاده‌سازی:</strong> <a href="../lab/app/Dockerfile">Dockerfile</a> و تنظیمات API در <a href="../lab/compose.yaml">compose.yaml</a>. دیتابیس پورت عمومی نداشت؛ این ویژگی حفظ و شبکهٔ داخلی هم اضافه شده است.</p>
+<h2 id="section-4">۴. اجرای برنامه از صفر</h2>
+<p>نیازمندی‌ها: Docker Compose v2 و Python 3.10 یا بالاتر؛ اینترنت برای دریافت image و dependency. دستورهای این راهنما برای ترمینال لینوکس یا جلسهٔ SSH نوشته شده‌اند. روی ویندوز برای ابزارهای Python می‌توان به‌جای <code>python3</code> از <code>python</code> استفاده کرد.</p>
+<p>پس از clone کردن مخزن، وارد پوشهٔ <code>lab</code> شوید:</p>
+<div class="code-block"><div class="code-label"><span>bash</span><button type="button" class="copy">کپی</button></div><pre dir="ltr"><code>git clone https://github.com/AlirezaHossaini79/order-api-security-assessment.git
+cd order-api-security-assessment/lab
+python3 tools/setup_secrets.py
+docker compose -p hr-hosseini up -d --build
+python3 tools/smoke.py</code></pre></div>
+<p>ابزارهای تست روی میزبان از کتابخانهٔ استاندارد Python استفاده می‌کنند و نصب dependency جداگانه لازم ندارند. در اجرای موفق، دستور آخر این پیام را می‌دهد:</p>
+<div class="code-block"><div class="code-label"><span>text</span><button type="button" class="copy">کپی</button></div><pre dir="ltr"><code>PASS: live, ready, create, read</code></pre></div>
+<p>این تست ساده بررسی می‌کند برنامه زنده است، به دیتابیس وصل می‌شود و ثبت و خواندن سفارش کار می‌کند.</p>
+<h3>اگر نسخهٔ اولیه از قبل اجرا شده است</h3>
+<p>اجرای سادهٔ API جدید روی DB قدیمی کافی نیست؛ باید کاربر محدود و مجوزهایش هم ساخته شوند. اسکریپت زیر این کار را با حفظ سفارش‌ها انجام می‌دهد:</p>
+<div class="code-block"><div class="code-label"><span>bash</span><button type="button" class="copy">کپی</button></div><pre dir="ltr"><code>cd /root/direct/lab
+sh tools/deploy_existing.sh lab</code></pre></div>
+<p><code>lab</code> نام پروژهٔ فعلی سرور است. اگر قبلاً با <code>-p hr-hosseini</code> اجرا کرده‌اید، همان نام را جایگزین کنید. این اسکریپت نسخهٔ جدید را می‌سازد، برای مدت کوتاهی API را متوقف می‌کند، تنظیمات DB را اصلاح می‌کند و برنامه را دوباره بالا می‌آورد. volume اصلی حذف نمی‌شود.</p>
+<h2 id="section-5">۵. تنظیم پورت و رمزها</h2>
+<p>حالت پیش‌فرض فقط از خود میزبان در دسترس است:</p>
+<div class="code-block"><div class="code-label"><span>text</span><button type="button" class="copy">کپی</button></div><pre dir="ltr"><code>http://127.0.0.1:18080/live</code></pre></div>
+<p>برای تغییر تنظیمات اختیاری:</p>
+<div class="code-block"><div class="code-label"><span>bash</span><button type="button" class="copy">کپی</button></div><pre dir="ltr"><code>cp .env.example .env</code></pre></div>
+<p>فایل <code>.env</code> را ویرایش کنید. برای دسترسی با آی‌پی عمومی، <code>LAB_BIND_ADDRESS=0.0.0.0</code> و برای تغییر پورت، مثلاً <code>LAB_PORT=18081</code> بگذارید؛ سپس دوباره دستور <code>docker compose -p hr-hosseini up -d</code> را اجرا کنید. تست‌ها هم باید به پورت انتخاب‌شده فرستاده شوند. این برنامه صفحهٔ اصلی ندارد؛ برای بررسی در مرورگر از <code>/live</code> یا <code>/ready</code> استفاده کنید.</p>
+<p>رمزها در <code>lab/secrets/</code> ساخته می‌شوند و مقدارشان چاپ نمی‌شود. اجرای دوبارهٔ ابزار، رمزهای موجود را عوض نمی‌کند. پوشه روی لینوکس با دسترسی <code>0700</code> ساخته می‌شود و فایل داخل آن برای خواندن توسط کاربر کانتینر <code>0644</code> است. در ویندوز، دسترسی فایل‌ها تابع ACL کاربر است. Compose این فایل‌ها را فقط‌خواندنی mount می‌کند؛ فقط رمز برنامه در اختیار API قرار می‌گیرد. این سازوکار فایل‌محور است و رمزنگاری ذخیره‌سازی یا secret manager ابری ایجاد نمی‌کند.</p>
+<h2 id="section-6">۶. تست دستی با چشم خودمان</h2>
+<p>همهٔ دستورهای این بخش را در یک ترمینال اجرا کنید. از توکن‌های ساختگی همین تمرین استفاده می‌شود. <strong>نسخهٔ فعلی اصلاح شده است</strong>؛ برای نتیجهٔ قبل، فایل <a href="../evidence/before.json">شواهد نسخهٔ اولیه</a> را ببینید. لازم نیست برنامهٔ ناامن را دوباره روی سرور عمومی اجرا کنید.</p>
+<h3>قدم اول ـ آدرس برنامه را مشخص کنید</h3>
+<div class="code-block"><div class="code-label"><span>bash</span><button type="button" class="copy">کپی</button></div><pre dir="ltr"><code>BASE=http://127.0.0.1:18080</code></pre></div>
+<p>اگر از دستگاه دیگری تست می‌کنید، آدرس و پورت سرور خودتان را جایگزین کنید. از اینجا به بعد، <code>$BASE</code> همان آدرس است.</p>
+<h3>قدم دوم ـ باب یک سفارش تازه ثبت کند</h3>
+<div class="code-block"><div class="code-label"><span>bash</span><button type="button" class="copy">کپی</button></div><pre dir="ltr"><code>curl -i &quot;$BASE/orders&quot; \
+  -H &#x27;Authorization: Bearer lab-bob&#x27; \
+  -H &#x27;Content-Type: application/json&#x27; \
+  -d &#x27;{&quot;item&quot;:&quot;BOB-PRIVATE-ORDER&quot;}&#x27;</code></pre></div>
+<p>انتظار: پاسخ <code>201</code> با یک <code>id</code> جدید. مقدار ID هر بار ممکن است فرق کند. در دستور بعد، <code>123</code> را با عددی که واقعاً گرفته‌اید جایگزین کنید؛ به IDهای اولیه اتکا نکنید.</p>
+<div class="code-block"><div class="code-label"><span>bash</span><button type="button" class="copy">کپی</button></div><pre dir="ltr"><code>ORDER_ID=123</code></pre></div>
+<h3>قدم سوم ـ سه هویت همان سفارش را بخوانند</h3>
+<div class="code-block"><div class="code-label"><span>bash</span><button type="button" class="copy">کپی</button></div><pre dir="ltr"><code># مالک: باید 200 بگیرد و سفارش را ببیند
+curl -i &quot;$BASE/orders/$ORDER_ID&quot; -H &#x27;Authorization: Bearer lab-bob&#x27;
+
+# کاربر دیگر: باید 404 بگیرد و اطلاعات سفارش را نبیند
+curl -i &quot;$BASE/orders/$ORDER_ID&quot; -H &#x27;Authorization: Bearer lab-alice&#x27;
+
+# مسئول عملیات: باید 200 بگیرد و سفارش را ببیند
+curl -i &quot;$BASE/orders/$ORDER_ID&quot; -H &#x27;Authorization: Bearer lab-ops&#x27;</code></pre></div>
+<p>برای بررسی جهت عکس، همین کار را با سفارش تازهٔ آلیس تکرار کنید؛ باب نباید به آن دسترسی بگیرد. تست خودکار هر دو جهت را بررسی می‌کند.</p>
+<h3>قدم چهارم ـ بدون توکن و با توکن اشتباه امتحان کنید</h3>
+<div class="code-block"><div class="code-label"><span>bash</span><button type="button" class="copy">کپی</button></div><pre dir="ltr"><code>curl -i &quot;$BASE/orders/$ORDER_ID&quot;
+curl -i &quot;$BASE/orders/$ORDER_ID&quot; -H &#x27;Authorization: Bearer invalid-token&#x27;</code></pre></div>
+<p>انتظار: هر دو <code>401</code>. برنامه باید قبل از دادن اطلاعات، هویت معتبر بخواهد.</p>
+<h3>قدم پنجم ـ تنظیمات حساس را بررسی کنید</h3>
+<div class="code-block"><div class="code-label"><span>bash</span><button type="button" class="copy">کپی</button></div><pre dir="ltr"><code># بدون توکن: 401
+curl -i &quot;$BASE/debug/config&quot;
+
+# آلیس: 403
+curl -i &quot;$BASE/debug/config&quot; -H &#x27;Authorization: Bearer lab-alice&#x27;
+
+# ops: پاسخ 200، اما فقط mode و بدون DSN یا رمز
+curl -i &quot;$BASE/debug/config&quot; -H &#x27;Authorization: Bearer lab-ops&#x27;</code></pre></div>
+<p>انتظار برای پاسخ مجاز:</p>
+<div class="code-block"><div class="code-label"><span>json</span><button type="button" class="copy">کپی</button></div><pre dir="ltr"><code>{&quot;mode&quot;: &quot;synthetic-lab&quot;}</code></pre></div>
+<h3>قدم ششم ـ دسترسی بخش کنترل را بررسی کنید</h3>
+<p>بدنهٔ خالی تنظیمی را تغییر نمی‌دهد، پس برای بررسی مجوز کافی است:</p>
+<div class="code-block"><div class="code-label"><span>bash</span><button type="button" class="copy">کپی</button></div><pre dir="ltr"><code># بدون توکن: 401
+curl -i &quot;$BASE/lab/control&quot; -H &#x27;Content-Type: application/json&#x27; -d &#x27;{}&#x27;
+
+# آلیس: 403
+curl -i &quot;$BASE/lab/control&quot; -H &#x27;Content-Type: application/json&#x27; \
+  -H &#x27;Authorization: Bearer lab-alice&#x27; -d &#x27;{}&#x27;
+
+# ops: 200
+curl -i &quot;$BASE/lab/control&quot; -H &#x27;Content-Type: application/json&#x27; \
+  -H &#x27;Authorization: Bearer lab-ops&#x27; -d &#x27;{}&#x27;</code></pre></div>
+<h3>قدم هفتم ـ نبود query در آمار را بررسی کنید</h3>
+<div class="code-block"><div class="code-label"><span>bash</span><button type="button" class="copy">کپی</button></div><pre dir="ltr"><code>curl -s &quot;$BASE/live?probe=synthetic-query-marker&quot;
+curl -i &quot;$BASE/metrics&quot;
+curl -s &quot;$BASE/metrics&quot; -H &#x27;Authorization: Bearer lab-ops&#x27;</code></pre></div>
+<p>درخواست بدون توکن به metrics باید <code>401</code> بگیرد. پاسخ مجاز باید آمار داشته باشد، اما متن <code>synthetic-query-marker</code> در آن نباشد. در این تست فقط از یک عبارت ساختگی استفاده کنید.</p>
+<h3>معنی کدهای پاسخ</h3>
+<div class="table-wrap"><table><thead><tr><th>کد</th><th>معنی در این برنامه</th></tr></thead><tbody><tr><td>200</td><td>درخواست موفق بود؛ در حالت خطای تجاری باید بدنهٔ <code>ok</code> را هم بررسی کرد</td></tr><tr><td>201</td><td>سفارش ساخته شد</td></tr><tr><td>400</td><td>ورودی قابل قبول نیست</td></tr><tr><td>401</td><td>توکن غایب یا نامعتبر است</td></tr><tr><td>403</td><td>هویت معتبر است، ولی این نقش اجازه ندارد</td></tr><tr><td>404</td><td>سفارش وجود ندارد یا کاربر مجاز به دیدن آن نیست</td></tr><tr><td>405</td><td>روش HTTP برای این مسیر مناسب نیست</td></tr><tr><td>503</td><td>وابستگی مثل دیتابیس در دسترس نیست</td></tr></tbody></table></div>
+<h2 id="section-7">۷. تست خودکار و خروجی قابل بررسی</h2>
+<figure><img loading="lazy" src="images/test-flow.png" alt="مسیر بررسی از اجرای برنامه تا شواهد تست"><figcaption>مسیر بررسی از اجرای برنامه تا شواهد تست</figcaption></figure>
+<p>این دستورها را از <code>lab</code> اجرا کنید. <code>security_checks.py</code> سفارش تازه می‌سازد و ID را از پاسخ می‌گیرد؛ شناسهٔ ثابت ندارد.</p>
+<div class="code-block"><div class="code-label"><span>bash</span><button type="button" class="copy">کپی</button></div><pre dir="ltr"><code>python3 tests/security_checks.py --url http://127.0.0.1:18080 \
+  --expect fixed --evidence ../evidence/local-security.json
+
+python3 tools/runtime_checks.py --project hr-hosseini \
+  --evidence ../evidence/local-runtime.json</code></pre></div>
+<p>انتظار: <code>35/35 checks passed</code> در تست امنیتی و ۱۰ پیام <code>PASS</code> در بررسی کانتینر و DB. برای محیط فعلی سرور که نام پروژه‌اش <code>lab</code> است، در دستور دوم <code>--project lab</code> بگذارید.</p>
+<p>تست امنیتی، دسترسی مجاز و غیرمجاز را با هم بررسی می‌کند؛ صرفاً بستن همهٔ مسیرها کافی نیست. تست runtime هم تنظیمات واقعی کانتینر و مجوزهای واقعی DB را می‌خواند، نه فقط متن Compose را.</p>
+<p>برای اجرای مستقل با volume و رمز تازه:</p>
+<div class="code-block"><div class="code-label"><span>bash</span><button type="button" class="copy">کپی</button></div><pre dir="ltr"><code>python3 tools/verify_clean.py</code></pre></div>
+<p>این ابزار یک پروژهٔ موقت با نام تصادفی و پورت آزاد می‌سازد؛ اجرای برنامه، تست امنیتی، مجوزها، ابزار کنترل و ۱۰۰ درخواست نمونه را بررسی می‌کند. در پایان فقط کانتینرها و volume همان پروژهٔ موقت را پاک می‌کند. محیط اصلی دست‌نخورده می‌ماند.</p>
+<h3>نتیجه‌ای که ثبت شده است</h3>
+<div class="table-wrap"><table><thead><tr><th>بررسی</th><th>نتیجه</th><th>مدرک</th></tr></thead><tbody><tr><td>بازتولید وضعیت اولیه</td><td>۶ بررسی موفق برای اثبات مشکل‌ها</td><td><a href="../evidence/before.json">before.json</a></td></tr><tr><td>دسترسی و عملکرد بعد از اصلاح</td><td>۳۵ از ۳۵ موفق</td><td><a href="../evidence/after.json">after.json</a></td></tr><tr><td>تنظیمات واقعی کانتینر و DB</td><td>۱۰ از ۱۰ موفق</td><td><a href="../evidence/runtime.json">runtime.json</a></td></tr><tr><td>امنیت در نصب کاملاً تازه</td><td>۳۵ از ۳۵ موفق</td><td><a href="../evidence/clean-security.json">clean-security.json</a></td></tr><tr><td>مجوزها در نصب کاملاً تازه</td><td>۱۰ از ۱۰ موفق</td><td><a href="../evidence/clean-runtime.json">clean-runtime.json</a></td></tr><tr><td>بار نمونه با ۵ worker</td><td>۱۰۰ درخواست از ۱۰۰ موفق</td><td><a href="../evidence/clean-run.log">clean-run.log</a></td></tr></tbody></table></div>
+<p>موفق بودن بررسی‌های نسخهٔ اولیه به معنی امن بودن آن نیست؛ یعنی تست توانسته مشکل را بازتولید کند. فایل‌های JSON زمان UTC، فرمان اجرا و نتیجهٔ تک‌تک بررسی‌ها را دارند. هدر Authorization و مقدار DSN پیش از ذخیره پوشانده شده‌اند؛ تصویرهای راهنما جایگزین این شواهد نیستند.</p>
+<h2 id="section-8">۸. فایل‌ها را از کجا دنبال کنیم؟</h2>
+<div class="code-block"><div class="code-label"><span>text</span><button type="button" class="copy">کپی</button></div><pre dir="ltr"><code>README.md                    راهنمای اصلی
+SUBMISSION.md                خلاصهٔ تحویل مطابق فرم تمرین
+TASK.fa.md                   صورت اصلی تمرین
+START-HERE.html              نسخهٔ HTML صورت تمرین
+PACKAGE.json                 مشخصات بستهٔ اولیه
+lab/
+  compose.yaml               اتصال سرویس‌ها، پورت، شبکه و secret
+  app/app.py                 منطق API و کنترل دسترسی
+  app/Dockerfile             ساخت image و کاربر اجرای API
+  app/requirements.txt       نسخهٔ dependencyها
+  db/init.sh                 ساخت نقش محدود و مجوزهای DB
+  tests/security_checks.py   تست مثبت و منفی دسترسی‌ها
+  tools/                     ابزار اجرا، کنترل و بررسی محیط
+docs/
+  guide.html                 همین راهنما برای خواندن در مرورگر
+  SECURITY-REPORT.fa.md       گزارش فنی و محل یافته‌های اولیه
+  images/                    تصویرهای توضیحی راهنما
+evidence/                    خروجی واقعی و پالایش‌شدهٔ تست‌ها</code></pre></div>
+<p>ساختار اصلی <code>lab/app</code> و <code>lab/tools</code> حفظ شده است. فایل‌های اضافه برای رفع دسترسی‌ها، راه‌اندازی DB و اثبات نتیجه هستند؛ قابلیت تازه‌ای به محصول اضافه نشده است. فایل‌های صورت تمرین بدون تغییر حفظ شده‌اند. در تاریخچهٔ Git، نسخهٔ اولیه و اصلاحات در commitهای جدا قابل مقایسه‌اند.</p>
+<h2 id="section-9">۹. توقف و خطاهای معمول</h2>
+<p>برای توقف بدون حذف سفارش‌ها:</p>
+<div class="code-block"><div class="code-label"><span>bash</span><button type="button" class="copy">کپی</button></div><pre dir="ltr"><code>docker compose -p hr-hosseini down</code></pre></div>
+<p><code>down -v</code> داده را هم حذف می‌کند؛ برای توقف روزمره از آن استفاده نکنید.</p>
+<div class="table-wrap"><table><thead><tr><th>چیزی که می‌بینید</th><th>علت محتمل و اقدام</th></tr></thead><tbody><tr><td><code>Connection refused</code></td><td>کانتینر آماده نیست یا پورت اشتباه است؛ <code>docker compose -p hr-hosseini ps</code> را ببینید</td></tr><tr><td><code>401</code> در آدرس اصلی <code>/</code></td><td>این برنامه صفحهٔ اصلی ندارد؛ برای سلامت از <code>/live</code> استفاده کنید</td></tr><tr><td><code>401</code> یا <code>403</code> در مسیر مدیریتی</td><td>توکن و نقش را بررسی کنید؛ این پاسخ ممکن است دقیقاً نتیجهٔ درست تست باشد</td></tr><tr><td><code>404</code> برای سفارش خودتان</td><td>ID واقعی پاسخ ساخت سفارش و توکن مالک را دوباره بررسی کنید</td></tr><tr><td>خطای فایل secret</td><td>ابتدا <code>python3 tools/setup_secrets.py</code> را اجرا کنید</td></tr><tr><td>خطای DB بعد از ارتقای نسخه اولیه</td><td>از اسکریپت ارتقای محیط قبلی با نام پروژهٔ درست استفاده کنید</td></tr><tr><td>پورت اشغال است</td><td>مقدار <code>LAB_PORT</code> در <code>.env</code> را عوض کنید و آدرس تست‌ها را هم تغییر دهید</td></tr></tbody></table></div>
+<h2 id="section-10">۱۰. چه محدودیت‌هایی باقی مانده است؟</h2>
+<p>توکن‌ها عمداً ثابت و آزمایشی‌اند. هرکس توکن باب را بداند، می‌تواند خودش را باب معرفی کند؛ اصلاح مالکیت، جای احراز هویت واقعی را نمی‌گیرد. برای production باید توکن دارای انقضا و امکان لغو، مدیریت هویت، TLS و مدیریت مناسب رمز اضافه شود.</p>
+<p>نقش DB محدود شده، اما خود API برای اجرای کارش به خواندن سفارش‌ها دسترسی دارد؛ جداسازی کاربران در API انجام می‌شود و RLS در این تمرین اضافه نشده است. سرور HTTP همان سرور سادهٔ اولیه است و rate limit یا تضمین مقابله با DoS اضافه نشده. کنترل خرابی در حافظهٔ هر نمونه باقی می‌ماند. کلید Idempotency ذخیره می‌شود، اما تضمین جلوگیری از سفارش تکراری ندارد؛ این قابلیت جزو معیارهای امنیتی تمرین نبود.</p>
+<p>اسکن CVE اجرا نشده و این گزارش ادعای نبود همهٔ آسیب‌پذیری‌های ممکن را ندارد. تفکیک اصلاحات انجام‌شده و ریسک‌های باقی‌مانده در <a href="SECURITY-REPORT.fa.md">گزارش فنی</a> آمده است.</p>
+<h2 id="section-11">۱۱. استفاده از AI و آماده‌شدن برای دفاع</h2>
+<p>برای بررسی سورس، نوشتن اصلاحات، تست و مستندات از OpenAI Codex استفاده شده است. نتیجه با درخواست و پاسخ واقعی، بررسی مجوز DB و نصب تازه راستی‌آزمایی شده؛ مسئولیت توضیح نهایی با نامزد است. نمونهٔ پیشنهاد نامناسب و شیوهٔ اصلاح آن در <a href="../SUBMISSION.md">فرم تحویل</a> ثبت شده است.</p>
+<p>در دفاع بهتر است بتوانید این چهار مورد را خودتان نشان دهید: باب سفارش ثبت می‌کند، آلیس آن را نمی‌بیند، ops آن را می‌بیند و هیچ پاسخ API رمز DB را نشان نمی‌دهد. سپس توضیح دهید چرا معتبر بودن توکن با مجاز بودن دسترسی فرق دارد و چرا رمز و سطح دسترسی DB جدا شده‌اند.</p></main><footer>تمام شکل‌ها توضیحی‌اند؛ مرجع نتایج، فایل‌های واقعی پوشهٔ evidence است.</footer><script>document.querySelectorAll('.copy').forEach(function(button){button.addEventListener('click',async function(){const code=button.closest('.code-block').querySelector('pre code');try{if(navigator.clipboard){await navigator.clipboard.writeText(code.textContent)}else{const range=document.createRange();range.selectNodeContents(code);const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);if(!document.execCommand('copy'))throw Error('copy');selection.removeAllRanges()}button.textContent='کپی شد';setTimeout(()=>button.textContent='کپی',1800)}catch(e){button.textContent='متن را انتخاب کنید'}})});</script></body></html>

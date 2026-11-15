@@ -1,0 +1,90 @@
+{
+  "time_utc": "2026-11-15T14:43:41.195076+00:00",
+  "command": "tools/runtime_checks.py --project lab --evidence ../evidence/runtime.json",
+  "checks": [
+    {
+      "name": "API uses non-root UID",
+      "passed": true,
+      "actual": "10001:10001"
+    },
+    {
+      "name": "API root filesystem is read-only",
+      "passed": true,
+      "actual": true
+    },
+    {
+      "name": "API drops all capabilities",
+      "passed": true,
+      "actual": [
+        "ALL"
+      ]
+    },
+    {
+      "name": "API cannot gain privileges",
+      "passed": true,
+      "actual": [
+        "no-new-privileges:true"
+      ]
+    },
+    {
+      "name": "DB has no published port",
+      "passed": true,
+      "actual": {}
+    },
+    {
+      "name": "API environment contains no DSN/password value",
+      "passed": true,
+      "actual": [
+        "DB_USER",
+        "DB_PASSWORD_FILE",
+        "DB_HOST",
+        "DB_NAME",
+        "PATH",
+        "LANG",
+        "GPG_KEY",
+        "PYTHON_VERSION",
+        "PYTHON_SHA256",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONUNBUFFERED"
+      ]
+    },
+    {
+      "name": "API mounts only application credential",
+      "passed": true,
+      "actual": [
+        "db_app_password"
+      ]
+    },
+    {
+      "name": "DB is on internal networks only",
+      "passed": true,
+      "actual": {
+        "lab_backend": true
+      }
+    },
+    {
+      "name": "DB app role has no admin attributes",
+      "passed": true,
+      "actual": [
+        "lab_app",
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "name": "DB allows SELECT/INSERT only, no schema creation",
+      "passed": true,
+      "actual": [
+        true,
+        true,
+        false,
+        false,
+        false
+      ]
+    }
+  ],
+  "passed": true
+}

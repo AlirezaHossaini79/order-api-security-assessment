@@ -1,0 +1,825 @@
+{
+  "time_utc": "2026-11-15T14:46:19.520994+00:00",
+  "command": "tests/security_checks.py --url http://127.0.0.1:40939 --expect fixed --evidence /root/direct/evidence/clean-security.json",
+  "base_url": "http://127.0.0.1:40939",
+  "expect": "fixed",
+  "checks": [
+    {
+      "name": "alice creates order",
+      "passed": true
+    },
+    {
+      "name": "bob creates order",
+      "passed": true
+    },
+    {
+      "name": "alice cannot read bob",
+      "passed": true
+    },
+    {
+      "name": "anonymous config denied",
+      "passed": true
+    },
+    {
+      "name": "anonymous control denied",
+      "passed": true
+    },
+    {
+      "name": "metrics query data absent",
+      "passed": true
+    },
+    {
+      "name": "alice reads own order",
+      "passed": true
+    },
+    {
+      "name": "alice cannot read other owner",
+      "passed": true
+    },
+    {
+      "name": "ops reads alice order",
+      "passed": true
+    },
+    {
+      "name": "alice denied /lab/control",
+      "passed": true
+    },
+    {
+      "name": "alice denied /debug/config",
+      "passed": true
+    },
+    {
+      "name": "alice denied /metrics",
+      "passed": true
+    },
+    {
+      "name": "bob reads own order",
+      "passed": true
+    },
+    {
+      "name": "bob cannot read other owner",
+      "passed": true
+    },
+    {
+      "name": "ops reads bob order",
+      "passed": true
+    },
+    {
+      "name": "bob denied /lab/control",
+      "passed": true
+    },
+    {
+      "name": "bob denied /debug/config",
+      "passed": true
+    },
+    {
+      "name": "bob denied /metrics",
+      "passed": true
+    },
+    {
+      "name": "missing token denied /orders",
+      "passed": true
+    },
+    {
+      "name": "invalid token denied /orders",
+      "passed": true
+    },
+    {
+      "name": "missing token denied /orders/4",
+      "passed": true
+    },
+    {
+      "name": "invalid token denied /orders/4",
+      "passed": true
+    },
+    {
+      "name": "missing token denied /lab/control",
+      "passed": true
+    },
+    {
+      "name": "invalid token denied /lab/control",
+      "passed": true
+    },
+    {
+      "name": "missing token denied /debug/config",
+      "passed": true
+    },
+    {
+      "name": "invalid token denied /debug/config",
+      "passed": true
+    },
+    {
+      "name": "missing token denied /metrics",
+      "passed": true
+    },
+    {
+      "name": "invalid token denied /metrics",
+      "passed": true
+    },
+    {
+      "name": "ops control works",
+      "passed": true
+    },
+    {
+      "name": "control rejects invalid values",
+      "passed": true
+    },
+    {
+      "name": "ops config contains no DSN or password",
+      "passed": true
+    },
+    {
+      "name": "invalid item rejected",
+      "passed": true
+    },
+    {
+      "name": "order read rejects POST",
+      "passed": true
+    },
+    {
+      "name": "/live remains available",
+      "passed": true
+    },
+    {
+      "name": "/ready remains available",
+      "passed": true
+    }
+  ],
+  "requests": [
+    {
+      "time_utc": "2026-11-15T14:46:19.367055+00:00",
+      "request": {
+        "method": "POST",
+        "path": "/orders",
+        "actor": "alice",
+        "headers": {
+          "Authorization": "[REDACTED]",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "item": "alice-private-check"
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "ok": true,
+          "id": 4
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.379517+00:00",
+      "request": {
+        "method": "POST",
+        "path": "/orders",
+        "actor": "bob",
+        "headers": {
+          "Authorization": "[REDACTED]",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "item": "bob-private-check"
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": {
+          "ok": true,
+          "id": 5
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.396983+00:00",
+      "request": {
+        "method": "GET",
+        "path": "/orders/5",
+        "actor": "alice",
+        "headers": {
+          "Authorization": "[REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 404,
+        "body": {
+          "error": "missing"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.398866+00:00",
+      "request": {
+        "method": "GET",
+        "path": "/debug/config",
+        "actor": null,
+        "headers": {},
+        "body": null
+      },
+      "response": {
+        "status": 401,
+        "body": {
+          "error": "authentication required"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.400308+00:00",
+      "request": {
+        "method": "POST",
+        "path": "/lab/control",
+        "actor": null,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {}
+      },
+      "response": {
+        "status": 401,
+        "body": {
+          "error": "authentication required"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.401346+00:00",
+      "request": {
+        "method": "GET",
+        "path": "/live?probe=synthetic-query-marker",
+        "actor": null,
+        "headers": {},
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "alive": true,
+          "release": "v1"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.402446+00:00",
+      "request": {
+        "method": "GET",
+        "path": "/metrics",
+        "actor": "ops",
+        "headers": {
+          "Authorization": "[REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "body": "# TYPE lab_http_requests_total counter\nlab_http_requests_total{path=\"/ready\",status=\"200\"} 2\nlab_http_requests_total{path=\"/live\",status=\"200\"} 2\nlab_http_requests_total{path=\"/orders\",status=\"201\"} 3\nlab_http_requests_total{path=\"/orders/:id\",status=\"200\"} 1\nlab_http_requests_total{path=\"/orders/:id\",status=\"404\"} 1\nlab_http_requests_total{path=\"/debug/config\",status=\"401\"} 1\nlab_http_requests_total{path=\"/lab/control\",status=\"401\"} 1\n# TYPE lab_http_request_duration_seconds summary\nlab_http_request_duration_seconds_sum 0.09848551568575203\nlab_http_request_duration_seconds_count 11\n"
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.415319+00:00",
+      "request": {
+        "method": "GET",
+        "path": "/orders/4",
+        "actor": "alice",
+        "headers": {
+          "Authorization": "[REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "id": 4,
+          "owner": "alice",
+          "item": "alice-private-check",
+          "request_key": ""
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.428690+00:00",
+      "request": {
+        "method": "GET",
+        "path": "/orders/5",
+        "actor": "alice",
+        "headers": {
+          "Authorization": "[REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 404,
+        "body": {
+          "error": "missing"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.442309+00:00",
+      "request": {
+        "method": "GET",
+        "path": "/orders/4",
+        "actor": "ops",
+        "headers": {
+          "Authorization": "[REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "id": 4,
+          "owner": "alice",
+          "item": "alice-private-check",
+          "request_key": ""
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.445452+00:00",
+      "request": {
+        "method": "POST",
+        "path": "/lab/control",
+        "actor": "alice",
+        "headers": {
+          "Authorization": "[REDACTED]",
+          "Content-Type": "application/json"
+        },
+        "body": {}
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "error": "forbidden"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.446682+00:00",
+      "request": {
+        "method": "GET",
+        "path": "/debug/config",
+        "actor": "alice",
+        "headers": {
+          "Authorization": "[REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "error": "forbidden"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.448943+00:00",
+      "request": {
+        "method": "GET",
+        "path": "/metrics",
+        "actor": "alice",
+        "headers": {
+          "Authorization": "[REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "error": "forbidden"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.463336+00:00",
+      "request": {
+        "method": "GET",
+        "path": "/orders/5",
+        "actor": "bob",
+        "headers": {
+          "Authorization": "[REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "id": 5,
+          "owner": "bob",
+          "item": "bob-private-check",
+          "request_key": ""
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.475902+00:00",
+      "request": {
+        "method": "GET",
+        "path": "/orders/4",
+        "actor": "bob",
+        "headers": {
+          "Authorization": "[REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 404,
+        "body": {
+          "error": "missing"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.486720+00:00",
+      "request": {
+        "method": "GET",
+        "path": "/orders/5",
+        "actor": "ops",
+        "headers": {
+          "Authorization": "[REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "id": 5,
+          "owner": "bob",
+          "item": "bob-private-check",
+          "request_key": ""
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.488968+00:00",
+      "request": {
+        "method": "POST",
+        "path": "/lab/control",
+        "actor": "bob",
+        "headers": {
+          "Authorization": "[REDACTED]",
+          "Content-Type": "application/json"
+        },
+        "body": {}
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "error": "forbidden"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.490038+00:00",
+      "request": {
+        "method": "GET",
+        "path": "/debug/config",
+        "actor": "bob",
+        "headers": {
+          "Authorization": "[REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "error": "forbidden"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.491324+00:00",
+      "request": {
+        "method": "GET",
+        "path": "/metrics",
+        "actor": "bob",
+        "headers": {
+          "Authorization": "[REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 403,
+        "body": {
+          "error": "forbidden"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.492772+00:00",
+      "request": {
+        "method": "POST",
+        "path": "/orders",
+        "actor": null,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "item": "unauthorized"
+        }
+      },
+      "response": {
+        "status": 401,
+        "body": {
+          "error": "authentication required"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.494126+00:00",
+      "request": {
+        "method": "POST",
+        "path": "/orders",
+        "actor": null,
+        "headers": {
+          "Authorization": "[REDACTED]",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "item": "unauthorized"
+        }
+      },
+      "response": {
+        "status": 401,
+        "body": {
+          "error": "authentication required"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.495459+00:00",
+      "request": {
+        "method": "GET",
+        "path": "/orders/4",
+        "actor": null,
+        "headers": {},
+        "body": null
+      },
+      "response": {
+        "status": 401,
+        "body": {
+          "error": "authentication required"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.496749+00:00",
+      "request": {
+        "method": "GET",
+        "path": "/orders/4",
+        "actor": null,
+        "headers": {
+          "Authorization": "[REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 401,
+        "body": {
+          "error": "authentication required"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.498041+00:00",
+      "request": {
+        "method": "POST",
+        "path": "/lab/control",
+        "actor": null,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {}
+      },
+      "response": {
+        "status": 401,
+        "body": {
+          "error": "authentication required"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.499201+00:00",
+      "request": {
+        "method": "POST",
+        "path": "/lab/control",
+        "actor": null,
+        "headers": {
+          "Authorization": "[REDACTED]",
+          "Content-Type": "application/json"
+        },
+        "body": {}
+      },
+      "response": {
+        "status": 401,
+        "body": {
+          "error": "authentication required"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.500363+00:00",
+      "request": {
+        "method": "GET",
+        "path": "/debug/config",
+        "actor": null,
+        "headers": {},
+        "body": null
+      },
+      "response": {
+        "status": 401,
+        "body": {
+          "error": "authentication required"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.501463+00:00",
+      "request": {
+        "method": "GET",
+        "path": "/debug/config",
+        "actor": null,
+        "headers": {
+          "Authorization": "[REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 401,
+        "body": {
+          "error": "authentication required"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.502560+00:00",
+      "request": {
+        "method": "GET",
+        "path": "/metrics",
+        "actor": null,
+        "headers": {},
+        "body": null
+      },
+      "response": {
+        "status": 401,
+        "body": {
+          "error": "authentication required"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.503665+00:00",
+      "request": {
+        "method": "GET",
+        "path": "/metrics",
+        "actor": null,
+        "headers": {
+          "Authorization": "[REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 401,
+        "body": {
+          "error": "authentication required"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.504571+00:00",
+      "request": {
+        "method": "POST",
+        "path": "/lab/control",
+        "actor": "ops",
+        "headers": {
+          "Authorization": "[REDACTED]",
+          "Content-Type": "application/json"
+        },
+        "body": {}
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "delay_ms": 0,
+          "business_fail": false,
+          "release": "v1"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.505589+00:00",
+      "request": {
+        "method": "POST",
+        "path": "/lab/control",
+        "actor": "ops",
+        "headers": {
+          "Authorization": "[REDACTED]",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "delay_ms": -1
+        }
+      },
+      "response": {
+        "status": 400,
+        "body": {
+          "error": "invalid request"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.506482+00:00",
+      "request": {
+        "method": "GET",
+        "path": "/debug/config",
+        "actor": "ops",
+        "headers": {
+          "Authorization": "[REDACTED]"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "mode": "synthetic-lab"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.507424+00:00",
+      "request": {
+        "method": "POST",
+        "path": "/orders",
+        "actor": "alice",
+        "headers": {
+          "Authorization": "[REDACTED]",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "item": {
+            "invalid": true
+          }
+        }
+      },
+      "response": {
+        "status": 400,
+        "body": {
+          "error": "invalid request"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.508476+00:00",
+      "request": {
+        "method": "POST",
+        "path": "/orders/4",
+        "actor": "alice",
+        "headers": {
+          "Authorization": "[REDACTED]",
+          "Content-Type": "application/json"
+        },
+        "body": {}
+      },
+      "response": {
+        "status": 405,
+        "body": {
+          "error": "method not allowed"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.509302+00:00",
+      "request": {
+        "method": "GET",
+        "path": "/live",
+        "actor": null,
+        "headers": {},
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "alive": true,
+          "release": "v1"
+        }
+      }
+    },
+    {
+      "time_utc": "2026-11-15T14:46:19.520949+00:00",
+      "request": {
+        "method": "GET",
+        "path": "/ready",
+        "actor": null,
+        "headers": {},
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "ready": true
+        }
+      }
+    }
+  ],
+  "passed": true
+}
